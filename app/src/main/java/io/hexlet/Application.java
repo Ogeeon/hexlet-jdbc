@@ -2,18 +2,19 @@ package io.hexlet;
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.Objects;
 
 public class Application {
     // Нужно указывать базовое исключение,
     // потому что выполнение запросов может привести к исключениям
     public static void main(String[] args) throws SQLException {
-        long termId;
+        // long termId;
         try (java.sql.Connection conn = DriverManager.getConnection("jdbc:h2:mem:hexlet_test")) {
             var sql = "CREATE TABLE users (id BIGINT PRIMARY KEY AUTO_INCREMENT, username VARCHAR(255), phone VARCHAR(255))";
             try (java.sql.Statement statement = conn.createStatement()) {
                 statement.execute(sql);
             }
+            /*
             sql = "INSERT INTO users (username, phone) VALUES (?, ?)";
             try (var preparedStatement = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
                 preparedStatement.setString(1, "Sarah");
@@ -57,7 +58,20 @@ public class Application {
                     System.out.print(resultSet.getString("username") + " ");
                     System.out.println(resultSet.getString("phone"));
                 }
-            }
+            }*/
+            var dao = new UserDAO(conn);
+
+            var user = new User("Maria", "888888888");
+            user.getId(); // null
+            dao.save(user);
+            System.out.println("Saved with ID=" + user.getId());
+
+            // Возвращается Optional<User>
+            var user2 = dao.find(user.getId()).get();
+            System.out.println("Are IDs equal? " + (Objects.equals(user2.getId(), user.getId())));
+            // user2.getId() == user.getId(); // true
+            System.err.println("Deleting 1: " + dao.delete(1l));
+            System.err.println("Deleting 2: " + dao.delete(2l));
         }
     }
 }
